@@ -22,7 +22,6 @@ import random
 import bisect
 import math
 import sys
-from operator import itemgetter
 
 
 global _flag_matplitlib_installed
@@ -60,7 +59,7 @@ def plot_events(ts, fname):
     pyplot.close()
 
 #=======================================================================
-# The class Model is basically a container for a set of Actors.
+# The class Model is a container for a set of Actors.
 #=======================================================================
 class Model:
     def __init__(self):
@@ -246,7 +245,6 @@ class PubSubGenerator:
             result.append(temp_str)
         return result
 
-
 #=======================================================================
 # This class gets the name of a distribution file that lists items
 # along with their weights and returns an item when get_item is called
@@ -313,8 +311,6 @@ class Actor():
         self.subscribe_start_time = 30000
         self.publish_start_time = 60000
         self.stop_time = 360000
-        # I don't know what the following two are for. I put them 
-        # here for potential future usage
         self.subscription_timeout = 30000 
         self.unsubscription_timeout = 60000
         ######################## End attributes ################################
@@ -334,9 +330,9 @@ class Actor():
         # its execution, and does not receive any notification we schedule a
         # "dummy" publish event at the very end of the experiment, which makes
         # the client stay online during the whole course of experiment
-        event = "event(%s,%s,`PUB(%s, `\"%s\"')',,)" %(self.stop_time+10000,\
-            self.id, self._total_publication_count, "s dummy dummy & s msgId dummy")
-        events.append( (self.stop_time, event) )
+        #event = "event(%s,%s,`PUB(%s, `\"%s\"')',,)" %(self.stop_time+10000,\
+        #    self.id, self._total_publication_count, "s dummy dummy & s msgId dummy")
+        #events.append( (self.stop_time, event) )
 
     def add_filters(self, filters):
         self._filters.extend(filters)

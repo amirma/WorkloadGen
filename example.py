@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import sys
-from  WorkloadGenerator import *
+from  WorkloadGen import *
 
 
 def main():
@@ -14,33 +14,17 @@ def main():
 
     model = Model()
     pubsubgen = PubSubGenerator() 
-    pubsubgen.set_dist_file_type("types.dist")
-    pubsubgen.set_dist_file_attr_name("words_freq_top_100")
-    pubsubgen.set_dist_file_constr_name("words_freq_top_100")
-    pubsubgen.set_dist_file_string("words_freq_top_100")
-    pubsubgen.set_dist_file_string_ops("string_operators.dist")
-    pubsubgen.set_dist_file_int("int_values.dist")
-    pubsubgen.set_dist_file_numerical_ops("operators.dist")
-    pubsubgen.set_dist_file_bool("bool_values.dist")
+    pubsubgen.set_dist_file_type("doc/distfiles/types.dist")
+    pubsubgen.set_dist_file_attr_name("doc/distfiles/string_values.dist")
+    pubsubgen.set_dist_file_constr_name("doc/distfiles/string_values.dist")
+    pubsubgen.set_dist_file_string("doc/distfiles/string_values.dist")
+    pubsubgen.set_dist_file_string_ops("doc/distfiles/string_operators.dist")
+    pubsubgen.set_dist_file_int("doc/distfiles/int_values.dist")
+    pubsubgen.set_dist_file_numerical_ops("doc/distfiles/num_operators.dist")
+    pubsubgen.set_dist_file_bool("doc/distfiles/bool_values.dist")
 
     # Subscriber 
     t_actor = Actor("S1C1")
-    """
-    f = generate_filters(min_constr=1, max_constr=2, count=1, dfile_type="types.dist",\
-        dfile_constr_name="words_freq_top_4",\
-        dfile_string="words_freq_top_4",\
-        dfile_string_operator="string_operators.dist",\
-        dfile_int="int_values.dist", dfile_numeric_operator="operators.dist",\
-        dfile_bool="bool_values.dist")
-    t_actor.add_filters(f)
-    f = generate_filters(min_constr=1, max_constr=1, count=1, dfile_type="types.dist",\
-        dfile_constr_name="words_freq_top_3",\
-        dfile_string="words_freq_top_3",\
-        dfile_string_operator="string_operators.dist",\
-        dfile_int="int_values.dist", dfile_numeric_operator="operators.dist",\
-        dfile_bool="bool_values.dist")
-    t_actor.add_filters(f)
-    """
     f = pubsubgen.generate_filters(min_constr=1, max_constr=5, count=10)
     t_actor.add_filters(f)
     model.add_actor(t_actor)
@@ -76,6 +60,7 @@ def main():
     actor.add_publications(t, p)
 
     actor.number_of_subscriptions = 0
+    actor.bla = 0
     model.add_actor(actor)    
 
     model.set_publication_format("pub {id} {count} {time} {event}")
