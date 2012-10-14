@@ -1,15 +1,16 @@
 #!/usr/bin/python
 
+
+# This is a part of WorkloadGen, a library tool to generate workload
+# to experiment with content-based publish subscribe systems. 
+# Copyright (C) Amir Malekpour
+
+
 import sys
 from  WorkloadGen import *
 
 
 def main():
-    if len(sys.argv) > 1:
-        output_filename = sys.argv[1]
-    else:
-        output_filename = "workload.wkld"
-
     print "Generating workload..."
 
     model = Model()
@@ -32,41 +33,33 @@ def main():
     # High-rate publisher
     actor = Actor("S2C1")
     # Steady low
-    t = generate_timestamps_equal_periods(70, 30, [40])
+    timestamps = generate_timestamps_equal_periods(70, 30, [40])
     # Ramp
-    t.extend(generate_timestamps_equal_periods(100, 60, range(40, 400, 60)))
+    t = generate_timestamps_equal_periods(100, 60, range(40, 400, 60))
+    timestamps.extend(t)
     # Steady
-    t.extend(generate_timestamps_equal_periods(160, 60, [400]))
+    t = generate_timestamps_equal_periods(160, 60, [400])
+    timestamps.extend(t)
     # Bursty
-    t.extend(generate_timestamps_bursty(begin_secs=220, duration_secs=100,\
+    t = generate_timestamps_bursty(begin_secs=220, duration_secs=100,\
         normal_rate_per_secs=80,\
         min_burst_rate_per_secs=150, max_burst_rate_per_secs=250,\
         min_burst_length_millisecs=500, max_burst_length_millisecs=1000,\
-        num_of_bursts=20))
+        num_of_bursts=20)
+    timestamps.extend(t)
     # customized
-    t.extend(generate_timestamps_custom_periods(320, [(30, 200),(70, 140),(20,50)]))
+    t = generate_timestamps_custom_periods(320, [(30, 200),(70, 140),(20,50)])
+    timestamps.extend(t)
 
-    p = pubsubgen.generate_publications(min_attr=1, max_attr=5, count=len(t))
-    actor.add_publications(t, p)
-
-    # Second catrgory of publications with other keywords
-    # Steady 
-    t = generate_timestamps_equal_periods(70, 250, [100])
-    p = pubsubgen.generate_publications(min_attr=1, max_attr=5, count=len(t))
-    actor.add_publications(t, p)
-
-    t = generate_timestamps_equal_periods(70, 250, [50])
-    p = pubsubgen.generate_publications(min_attr=1, max_attr=5, count=len(t))
-    actor.add_publications(t, p)
-
-    actor.number_of_subscriptions = 0
-    actor.bla = 0
+    pubs = pubsubgen.generate_publications(min_attr=1, max_attr=5, count=len(timestamps))
+    actor.add_publications(timestamps, pubs)
     model.add_actor(actor)    
 
     model.set_publication_format("pub {id} {count} {time} {event}")
     model.set_subscription_format("sub {id} {count} {time} {event}")
-    model.generate_events(output_filename)
-    print "done"
+
+    # now write the workload into a file named 'example.wkld'
+    model.generate_events("example.wkld")
 
 if __name__ == "__main__":
     main()

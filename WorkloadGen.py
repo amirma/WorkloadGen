@@ -78,16 +78,19 @@ class Model:
 
     def generate_events(self, fname):
         print("Generating events for %s actors..." %len(self.actors))
-        tenth = int(math.ceil(float(len(self.actors)) / 10))
+        percent = float(len(self.actors)) / 10 # percent work per actor
         counter = 0
         for tmp_id, tmp_intance in self.actors.items():
+            print(tmp_id)
             tmp_intance.generate_events(self.events,\
                 f_str_sub = self._str_sub_format,\
                 f_str_pub = self._str_pub_format)
+            """
             counter += 1
-            if(counter % tenth == 0):
-                print("%s0%%" %(counter/tenth))
-        print("Writing workload file...")
+            if( (counter * percent) % 10 == 0):
+                print("%s0%%" %(counter*tenth)/10)
+            """
+        print("Writing workload file %s ..."%fname)
         # Sort events based on time
         self.events.sort(key=itemgetter(0))
         f = open(fname, 'w')
@@ -95,6 +98,7 @@ class Model:
         for item in self.events[1:]:
             f.write("\n" + item[1])
         f.close()
+        print("done.")
 
     def plot_events(self, fname):
         plot_events(self.events, fname)
