@@ -177,7 +177,7 @@ class PubSubGenerator:
         pub_counter = 0
         names = set()
         for i in range(count):
-            str_atts = "\""
+            str_atts = ""
             names.clear()
             j = 0
             while j < random.randint(min_attr, max_attr):
@@ -198,7 +198,7 @@ class PubSubGenerator:
                     continue
                 j += 1
                 str_atts = str_atts + "%s %s %s , " %(type, attr_name, attr_value)
-            str_atts = str_atts[:-3] + "\""
+            str_atts = str_atts[:-3]
             result.append(str_atts)
             pub_counter += 1
             # return the number scheduled publish events for this client
@@ -222,7 +222,7 @@ class PubSubGenerator:
         names = set()
         for i in range(count):
             names.clear()
-            temp_str = "\""
+            temp_str = ""
             j = 0
             while j< random.randint(min_constr, max_constr):
                 # first determine the type
@@ -245,7 +245,7 @@ class PubSubGenerator:
                     continue
                 j += 1
                 temp_str += "%s %s %s %s , " %(type, const_name, op, const_value)
-            temp_str = temp_str[:-3] + "\""
+            temp_str = temp_str[:-3]
             result.append(temp_str)
         return result
 

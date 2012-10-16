@@ -55,8 +55,8 @@ def main():
     actor.add_publications(timestamps, pubs)
     model.add_actor(actor)    
 
-    model.set_publication_format("pub {id} {count} {time} {event}")
-    model.set_subscription_format("sub {id} {count} {time} {event}")
+    model.set_publication_format("{id} {time} {count} pub \"{event}\"")
+    model.set_subscription_format("{id} {time} {count} sub \"{event}\"")
 
     # now write the workload into a file named 'example.wkld'
     model.generate_events("example.wkld")
