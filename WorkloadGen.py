@@ -7,12 +7,12 @@
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
-#  
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#  
+#
 #  You should have received a copy of the GNU General Public License
 #  along with Siena.  If not, see <http:#www.gnu.org/licenses/>.
 #
@@ -28,7 +28,7 @@ global _flag_matplitlib_installed
 _flag_matplitlib_installed = True
 
 # try importing pyplot from matplotlib
-# this adds the optional feature of plotting 
+# this adds the optional feature of plotting
 # some workload information
 try:
     from matplotlib import pyplot
@@ -118,8 +118,8 @@ class Model:
 #=======================================================================
 # This class generates filters and messages (publications and subscriptions)
 # The user first set the necessary distribution files by calling
-# 'set_dist_file_*' and then calling 'generate_publications' and 
-# 'generate_filters'. 
+# 'set_dist_file_*' and then calling 'generate_publications' and
+# 'generate_filters'.
 #=======================================================================
 class PubSubGenerator:
     def __init__(self):
@@ -133,10 +133,14 @@ class PubSubGenerator:
         self._token_generators["double"] = WeightedItemSelector(None, "double values")
         self._token_generators["num_ops"] = WeightedItemSelector(None, "numerical operators")
         self._token_generators["bool"] = WeightedItemSelector(None, "boolean values")
+        # map an attribute/constraint name to a given type (int, string, etc). The type is the first one
+        # the happens to be chosen for that name, during generation of either the subscripotion or filters.
+        # This is to prevent assignment of two different types to a given attribute name.
+        self._name_to_type = {}
 
     def set_dist_file_type(self, fname):
         self._token_generators["type"] = WeightedItemSelector(fname, "type")
-       
+
     def set_dist_file_attr_name(self, fname):
         self._token_generators["attr_name"] = WeightedItemSelector(fname, "attribute name")
 
@@ -145,34 +149,34 @@ class PubSubGenerator:
 
     def set_dist_file_string(self, fname):
         self._token_generators["string"] = WeightedItemSelector(fname, "string")
-    
+
     def set_dist_file_string_ops(self, fname):
         self._token_generators["str_ops"] = WeightedItemSelector(fname, "string operators")
-    
+
     def set_dist_file_int(self, fname):
         self._token_generators["int"] = WeightedItemSelector(fname, "integer values")
- 
+
     def set_dist_file_double(self, fname):
         self._token_generators["double"] = WeightedItemSelector(fname, "double values")
-       
+
     def set_dist_file_numerical_ops(self, fname):
         self._token_generators["num_ops"] = WeightedItemSelector(fname, "numerical operators")
 
     def set_dist_file_bool(self, fname):
         self._token_generators["bool"] = WeightedItemSelector(fname, "boolean values")
-    
+
     def generate_publications(self, count=1, min_attr=1, max_attr=1):
-        result = [] 
+        result = []
         # get the requireed token generators
-        token_generator_type = self._token_generators["type"]    
-        token_generator_attr_name = self._token_generators["attr_name"]    
+        token_generator_type = self._token_generators["type"]
+        token_generator_attr_name = self._token_generators["attr_name"]
         token_generator_string = self._token_generators["string"]
         token_generator_int = self._token_generators["int"]
         token_generator_double = self._token_generators["double"]
         token_generator_bool = self._token_generators["bool"]
         token_generator_string_operator = self._token_generators["str_ops"]
         token_generator_numeric_operator = self._token_generators["num_ops"]
-       
+
         # Start generation process
         pub_counter = 0
         names = set()
@@ -183,9 +187,20 @@ class PubSubGenerator:
             while j < random.randint(min_attr, max_attr):
                 # first determine the type
                 type = token_generator_type.get_item()
-                attr_name = token_generator_attr_name.get_item()
-                if attr_name in names:
-                    continue
+                """ Choose an attribute name so that:
+                    1. It was not already chosen for this message
+                    2. Either it has not be chosen before (in this instance's lifetime not
+                    just this message) or it was chosen and assigned the same type as variable 'type'
+                """
+                while True:
+                    attr_name = token_generator_attr_name.get_item()
+                    if attr_name in names:
+                        continue
+                    if attr_name in self._name_to_type and self._name_to_type[attr_name] != type:
+                        continue
+                    else:
+                        self._name_to_type[attr_name] = type
+                    break
                 names.add(attr_name)
                 if type == "s" :
                     attr_value = token_generator_string.get_item()
@@ -209,8 +224,8 @@ class PubSubGenerator:
         result = []
 
         # get the requireed token generators
-        token_generator_type = self._token_generators["type"]    
-        token_generator_constr_name = self._token_generators["constr_name"]    
+        token_generator_type = self._token_generators["type"]
+        token_generator_constr_name = self._token_generators["constr_name"]
         token_generator_string = self._token_generators["string"]
         token_generator_int = self._token_generators["int"]
         token_generator_double = self._token_generators["double"]
@@ -227,9 +242,20 @@ class PubSubGenerator:
             while j< random.randint(min_constr, max_constr):
                 # first determine the type
                 type = token_generator_type.get_item()
-                const_name = token_generator_constr_name.get_item()
-                if const_name in names: 
-                    continue
+                """ Choose an attribute name so that:
+                    1. It was not already chosen for this message
+                    2. Either it has not be chosen before (in this instance's lifetime not
+                    just this message) or it was chosen and assigned the same type as variable 'type'
+                """
+                while True:
+                    const_name = token_generator_constr_name.get_item()
+                    if const_name in names:
+                        continue
+                    if const_name in self._name_to_type and self._name_to_type[const_name] != type:
+                        continue
+                    else:
+                        self._name_to_type[const_name] = type
+                    break
                 names.add(const_name)
                 if type == "s":
                     const_value = token_generator_string.get_item()
@@ -277,7 +303,7 @@ class WeightedItemSelector:
         except IOError:
             print "\nError: distribution file for %s does not exist: %s"%(self._desc, file_name)
             exit(-1)
-     
+
         # sort the list based on the weights, ascending ordered
         temp_list.sort(key=itemgetter(1))
 
@@ -287,7 +313,7 @@ class WeightedItemSelector:
         for item in temp_list:
             t += float(item[1])/total_weight
             self.word_list_normalized.append( (item[0], t) )
-        
+
         # Create an array of weights and sort the array so that the array
         # and the list of word/weights are sorted the same way
         self.weights = [r[1] for r in self.word_list_normalized]
@@ -302,7 +328,7 @@ class WeightedItemSelector:
         return item
 
 #========================================================================
-# The following class implements Actor, which is a publisher/subscriber   
+# The following class implements Actor, which is a publisher/subscriber
 #========================================================================
 class Actor():
     def __init__(self, id):
@@ -310,19 +336,19 @@ class Actor():
         self.events = []
         #################### Begin attributes ##########################
         # NOTE: If you add or remove any property here, don't forget
-        # to modify method "copy_parameters_from()" accodringly. 
+        # to modify method "copy_parameters_from()" accodringly.
 
         self.subscribe_start_time = 30000
         self.publish_start_time = 60000
         self.stop_time = 360000
-        self.subscription_timeout = 30000 
+        self.subscription_timeout = 30000
         self.unsubscription_timeout = 60000
         ######################## End attributes ################################
         self._total_publication_count = 0
         self._total_subscription_count = 0
         self._filters = []
         self._pub_set = []
-    
+
     def clear_filters(self):
         self._filters.clear()
 
@@ -343,7 +369,7 @@ class Actor():
 
     def generate_sub_events(self, f_str = None):
         time_t = self.subscribe_start_time + random.randint(0, 5000)
-        
+
         if(f_str == None):
             format_str = "subscribe {id} {count} {time} {event}"
         else:
@@ -354,7 +380,7 @@ class Actor():
             id=self.id, \
             count=self._total_subscription_count,\
             time = time_t,\
-            event = item) 
+            event = item)
             #event = "event(%s,%s,`SUB(%s, `\"%s\"')',,)" %(time, self.id,\
             #    self._total_subscription_count, item)
             self.events.append( (time_t, event) )
@@ -388,11 +414,11 @@ class Actor():
         return self._total_publication_count
 
     def copy_parameters_from(self, other):
-        
+
         self.subscribe_start_time = other.subscribe_start_time
         self.publish_start_time = other.publish_start_time
         self.stop_time = other.stop_time
-        # I don't know what the following two are for. I put them 
+        # I don't know what the following two are for. I put them
         # here for potential future usage
         self.subscription_timeout = other.subscription_timeout
         self.unsubscription_timeout = other.unsubscription_timeout
@@ -454,7 +480,7 @@ def generate_timestamps_equal_periods(begin_secs=0, duration_secs=0, list_rates_
     periods = len(list_rates_per_second)
     period_duration_milliseconds = duration_secs * 1000 / periods
     time_step = min(period_duration_milliseconds, 1000)
-    start = begin_secs * 1000 
+    start = begin_secs * 1000
     for period in range(periods):
         period_end = start + period_duration_milliseconds
         while start < period_end:
